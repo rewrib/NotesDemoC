@@ -1,4 +1,6 @@
-﻿using System;
+﻿using NotesDemoC.Models;
+using NotesDemoC.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Xamarin.Forms;
@@ -15,6 +17,7 @@ namespace NotesDemoC
         public MainPage()
         {
             BackgroundColor = Color.PowderBlue;
+            BindingContext = new MainPageViewModel();
             xamagonImage = new Image
             {
                 Source = "xamagon.png"
@@ -25,6 +28,7 @@ namespace NotesDemoC
                 BackgroundColor = Color.White,
                 Margin = new Thickness(10)
             };
+            noteEditor.SetBinding(Editor.TextProperty, "NoteText");
 
             saveButton = new Button
             {
@@ -33,7 +37,7 @@ namespace NotesDemoC
                 BackgroundColor = Color.Green,
                 Margin = new Thickness(10)
             };
-            saveButton.Clicked += SaveButton_Clicked;
+            saveButton.SetBinding(Button.CommandProperty, "SaveNoteCommand");
 
             deleteButton = new Button
             {
@@ -42,7 +46,13 @@ namespace NotesDemoC
                 BackgroundColor = Color.Red,
                 Margin = new Thickness(10)
             };
-            deleteButton.Clicked += DeleteButton_Clicked;
+            deleteButton.SetBinding(Button.CommandProperty, "EraseNoteCommand");
+
+            var collectionView = new CollectionView
+            {
+                ItemTemplate = new NotesTemplate()
+            };
+            collectionView.SetBinding(CollectionView.ItemsSourceProperty, "AllNotes");
 
             textLabel = new Label
             {
@@ -93,6 +103,31 @@ namespace NotesDemoC
         private void SaveButton_Clicked(object sender, EventArgs e)
         {
             textLabel.Text = noteEditor.Text;
+        }
+        class NotesTemplate : DataTemplate
+        {
+            public NotesTemplate() : base(LoadTemplate)
+            {
+
+            }
+
+            static StackLayout LoadTemplate()
+            {
+                var textLabel = new Label();
+                textLabel.SetBinding(Label.TextProperty, nameof(NoteModel.Text));
+
+                var frame = new Frame
+                {
+                    VerticalOptions = LayoutOptions.Center,
+                    Content = textLabel
+                };
+
+                return new StackLayout
+                {
+                    Children = { frame },
+                    Padding = new Thickness(10, 10)
+                };
+            }
         }
     }
 }
