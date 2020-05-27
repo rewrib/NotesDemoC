@@ -1,4 +1,5 @@
 ﻿using NotesDemoC.Models;
+using NotesDemoC.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,11 +24,28 @@ namespace NotesDemoC.ViewModels
                 };
                 AllNotes.Add(note);
                 NoteText = string.Empty;
-            });
+            }, 
+            () => !string.IsNullOrEmpty(NoteText));
+            
 
             EraseNoteCommand = new Command(() =>
             {
                 AllNotes.Clear();
+            });
+
+            NoteSelectedCommand = new Command(async () =>
+            {
+                if (SelectedNote is null)
+                    return;
+
+                var detailViewModel = new DetailPageViewModel
+                {
+                    NoteText = SelectedNote.Text
+                };
+
+                await Application.Current.MainPage.Navigation.PushAsync(new DetailPage(detailViewModel));
+
+                SelectedNote = null;
             });
         }
         string noteText;
@@ -39,11 +57,26 @@ namespace NotesDemoC.ViewModels
                 noteText = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NoteText)));
 
+                SaveNoteCommand.ChangeCanExecute();
+
             }
         }
-        ObservableCollection<NoteModel> AllNotes { get; }
+
+        NoteModel selectedNote;
+        public NoteModel SelectedNote
+        {
+            get => selectedNote;
+            set
+            {
+                selectedNote = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedNote)));
+            }
+        }
+
+        public ObservableCollection<NoteModel> AllNotes { get; }
 
         public Command SaveNoteCommand { get; }
         public Command EraseNoteCommand { get; }
+        public Command NoteSelectedCommand { get; }
     }
 }

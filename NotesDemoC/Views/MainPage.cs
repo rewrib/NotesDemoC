@@ -11,12 +11,12 @@ namespace NotesDemoC
     {
         Image xamagonImage;
         Editor noteEditor;
-        Label textLabel;
         Button saveButton, deleteButton;
 
         public MainPage()
         {
             BackgroundColor = Color.PowderBlue;
+            Title = "Notes";
             BindingContext = new MainPageViewModel();
             xamagonImage = new Image
             {
@@ -28,7 +28,7 @@ namespace NotesDemoC
                 BackgroundColor = Color.White,
                 Margin = new Thickness(10)
             };
-            noteEditor.SetBinding(Editor.TextProperty, "NoteText");
+            noteEditor.SetBinding(Editor.TextProperty, nameof(MainPageViewModel.NoteText));
 
             saveButton = new Button
             {
@@ -37,7 +37,7 @@ namespace NotesDemoC
                 BackgroundColor = Color.Green,
                 Margin = new Thickness(10)
             };
-            saveButton.SetBinding(Button.CommandProperty, "SaveNoteCommand");
+            saveButton.SetBinding(Button.CommandProperty, nameof(MainPageViewModel.SaveNoteCommand));
 
             deleteButton = new Button
             {
@@ -46,19 +46,18 @@ namespace NotesDemoC
                 BackgroundColor = Color.Red,
                 Margin = new Thickness(10)
             };
-            deleteButton.SetBinding(Button.CommandProperty, "EraseNoteCommand");
+            deleteButton.SetBinding(Button.CommandProperty, nameof(MainPageViewModel.EraseNoteCommand));
 
             var collectionView = new CollectionView
             {
-                ItemTemplate = new NotesTemplate()
+                ItemTemplate = new NotesTemplate(),
+                SelectionMode = SelectionMode.Single
             };
-            collectionView.SetBinding(CollectionView.ItemsSourceProperty, "AllNotes");
+            collectionView.SetBinding(CollectionView.ItemsSourceProperty, nameof(MainPageViewModel.AllNotes));
+            collectionView.SetBinding(CollectionView.SelectedItemProperty, nameof(MainPageViewModel.SelectedNote));
+            collectionView.SetBinding(CollectionView.SelectionChangedCommandProperty, nameof(MainPageViewModel.NoteSelectedCommand));
 
-            textLabel = new Label
-            {
-                FontSize = 20,
-                Margin = new Thickness(10)
-            };
+
 
             var grid = new Grid
             {
@@ -88,22 +87,13 @@ namespace NotesDemoC
             grid.Children.Add(saveButton, 0, 2);
             grid.Children.Add(deleteButton, 1, 2);
 
-            grid.Children.Add(textLabel, 0, 3);
-            Grid.SetColumnSpan(textLabel, 2);
+            grid.Children.Add(collectionView, 0, 3);
+            Grid.SetColumnSpan(collectionView, 2);
 
             Content = grid;
         }
 
-        private void DeleteButton_Clicked(object sender, EventArgs e)
-        {
-            textLabel.Text = "";
-            noteEditor.Text = "";
-        }
-
-        private void SaveButton_Clicked(object sender, EventArgs e)
-        {
-            textLabel.Text = noteEditor.Text;
-        }
+        
         class NotesTemplate : DataTemplate
         {
             public NotesTemplate() : base(LoadTemplate)

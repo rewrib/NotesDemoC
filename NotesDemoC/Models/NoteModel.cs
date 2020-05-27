@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NotesDemoC.Models
 {
-    class NoteModel
+    public class NoteModel
     {
         public string Text { get; set; }
 
